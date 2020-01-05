@@ -37,6 +37,10 @@ public class SwingUtils {
 		return Utils.getMax(components, c->c.getPreferredSize().width);
 	}
 	
+	public static void setMaxPreferredWidth(JComponent...components) {
+		setPreferredWidth(SwingUtils::getMaxPreferredWidth, components);
+	}
+	
 	public static void centerOnScreen(Window window) {
 		Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
 		window.setLocation(dim.width/2-window.getSize().width/2, dim.height/2-window.getSize().height/2);

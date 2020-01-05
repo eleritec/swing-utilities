@@ -3,7 +3,6 @@ package net.eleritec.swing.dialog;
 import static java.lang.String.format;
 import static net.eleritec.swing.util.SwingUtils.centerOnScreen;
 import static net.eleritec.swing.util.SwingUtils.invokeAndWait;
-import static net.eleritec.swing.util.SwingUtils.setPreferredWidth;
 import static net.eleritec.swing.util.SwingUtils.setSystemLookAndFeel;
 import static net.eleritec.swing.util.event.EventListeners.actions;
 import static net.eleritec.swing.util.event.EventListeners.keys;
@@ -117,8 +116,8 @@ public class PasswordDialog extends JFrame {
 		JPanel buttons = new JPanel(form);
 		cc = new CellConstraints();
 		buttons.add(cancel, cc.xy(3, 1));
-		buttons.add(accept, cc.xy(5, 1));
-		setPreferredWidth(SwingUtils::getMaxPreferredWidth, accept, cancel);
+		buttons.add(accept, cc.xy(5, 1));		
+		SwingUtils.setMaxPreferredWidth(accept, cancel);
 		
 		form = new FormLayout("pref:grow", "p, 10dlu, p");
 		JPanel content = new JPanel(form);
