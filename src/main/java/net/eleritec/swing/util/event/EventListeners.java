@@ -1,6 +1,8 @@
 package net.eleritec.swing.util.event;
 
 import static net.eleritec.swing.util.Utils.asList;
+import static net.eleritec.swing.util.Utils.filter;
+import static net.eleritec.swing.util.Utils.guard;
 import static net.eleritec.swing.util.Utils.map;
 import static net.eleritec.swing.util.event.EventTypes.ActionEvents.PERFORMED;
 import static net.eleritec.swing.util.event.EventTypes.MouseEvents.CLICKED;
@@ -61,7 +63,6 @@ import javax.swing.event.DocumentListener;
 import javax.swing.text.Document;
 
 import net.eleritec.swing.util.DuckType;
-import net.eleritec.swing.util.Utils;
 import net.eleritec.swing.util.event.EventTypes.ActionEvents;
 import net.eleritec.swing.util.event.EventTypes.ComponentEvents;
 import net.eleritec.swing.util.event.EventTypes.DocumentEvents;
@@ -139,7 +140,7 @@ public class EventListeners {
 	
 	@SafeVarargs
 	public static void onHierarchy(Component source, Consumer<HierarchyEvent> listener, Predicate<HierarchyEvent>...filters) {
-		Consumer<HierarchyEvent> handler = Utils.guard(listener, filters);
+		Consumer<HierarchyEvent> handler = guard(listener, filters);
 		hierarchyEvents(source).onChange(handler).listen();
 	}
 	
@@ -266,12 +267,12 @@ public class EventListeners {
 		}
 		
 		public KeyListeners onKey(Consumer<KeyEvent> handler, Predicate<KeyEvent> filter, KeyEvents...types) {
-			return onKey(Utils.guard(handler, filter), types);
+			return onKey(guard(handler, filter), types);
 		}
 		
 		@SafeVarargs
 		public final KeyListeners onKeyPressed(Consumer<KeyEvent> handler, Predicate<KeyEvent>...filters) {
-			return onKey(Utils.guard(handler, filters), KeyEvents.PRESSED);
+			return onKey(guard(handler, filters), KeyEvents.PRESSED);
 		}
 		
 		public KeyListeners onKey(Runnable handler, KeyEvents...types) {
@@ -407,7 +408,7 @@ public class EventListeners {
 		@SafeVarargs
 		protected final <E> EventSubscriptionBuilder<T, L, S> register(Consumer<E> handler, Predicate<T> filter, T...types) {
 			if(handler!=null) {
-				Utils.filter(types, filter).forEach(type->addEventHandler(handler, type));
+				filter(types, filter).forEach(type->addEventHandler(handler, type));
 			}
 			return this;
 		}
