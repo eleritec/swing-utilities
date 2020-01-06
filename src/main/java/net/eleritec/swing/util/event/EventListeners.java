@@ -3,10 +3,6 @@ package net.eleritec.swing.util.event;
 import static net.eleritec.swing.util.Utils.asList;
 import static net.eleritec.swing.util.Utils.map;
 import static net.eleritec.swing.util.event.EventTypes.ActionEvents.PERFORMED;
-import static net.eleritec.swing.util.event.EventTypes.DocumentEvents.CHANGED;
-import static net.eleritec.swing.util.event.EventTypes.DocumentEvents.INSERTED;
-import static net.eleritec.swing.util.event.EventTypes.DocumentEvents.REMOVED;
-import static net.eleritec.swing.util.event.EventTypes.KeyEvents.TYPED;
 import static net.eleritec.swing.util.event.EventTypes.MouseEvents.CLICKED;
 import static net.eleritec.swing.util.event.EventTypes.MouseEvents.DRAGGED;
 import static net.eleritec.swing.util.event.EventTypes.MouseEvents.ENTERED;
@@ -30,8 +26,12 @@ import java.awt.Component;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
+import java.awt.event.HierarchyEvent;
+import java.awt.event.HierarchyListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
@@ -55,16 +55,18 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
 
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.Document;
 
+import net.eleritec.swing.util.DuckType;
 import net.eleritec.swing.util.Utils;
 import net.eleritec.swing.util.event.EventTypes.ActionEvents;
+import net.eleritec.swing.util.event.EventTypes.ComponentEvents;
 import net.eleritec.swing.util.event.EventTypes.DocumentEvents;
 import net.eleritec.swing.util.event.EventTypes.FocusEvents;
+import net.eleritec.swing.util.event.EventTypes.HierarchyEvents;
 import net.eleritec.swing.util.event.EventTypes.KeyEvents;
 import net.eleritec.swing.util.event.EventTypes.MouseEvents;
 import net.eleritec.swing.util.event.EventTypes.WindowEvents;
@@ -72,7 +74,7 @@ import net.eleritec.swing.util.event.EventTypes.WindowEvents;
 public class EventListeners {
 
 	public static void onAction(Object source, Consumer<ActionEvent> listener) {
-		actions(source).onAction(listener).listen();
+		actionEvents(source).onAction(listener).listen();
 	}
 	
 	public static void onAction(Object source, Runnable listener) {
@@ -80,7 +82,7 @@ public class EventListeners {
 	}
 	
 	public static void onDocument(Object source, Consumer<DocumentEvent> listener, DocumentEvents...types) {
-		document(source).onEvent(listener, types).listen();
+		documentEvents(source).onEvent(listener, types).listen();
 	}
 	
 	public static void onDocument(Object source, Runnable listener, DocumentEvents...types) {
@@ -88,31 +90,31 @@ public class EventListeners {
 	}
 	
 	public static void onMouse(Component component, Consumer<MouseEvent> listener, MouseEvents...types) {
-		mouse(component).onMouse(listener, types).listen();
+		mouseEvents(component).onMouse(listener, types).listen();
 	}
 	
 	public static void onMouse(Component component, Runnable listener, MouseEvents...types) {
 		onMouse(component, e->listener.run(), types);
 	}
-	
-	public static void onKey(Component component, Consumer<KeyEvent> listener, KeyEvents...types) {
-		keys(component).onKey(listener, types).listen();
-	}
-	
-	public static void onKey(Component component, Runnable listener, KeyEvents...types) {
-		onKey(component, e->listener.run(), types);
-	}
-	
+		
 	public static void onMouseWheel(Component component, Consumer<MouseWheelEvent> listener) {
-		mouse(component).onWheel(listener).listen();
+		mouseEvents(component).onWheel(listener).listen();
 	}
 	
 	public static void onMouseWheel(Component component, Runnable listener) {
 		onMouseWheel(component, e->listener.run());
 	}
 	
+	public static void onKey(Component component, Consumer<KeyEvent> listener, KeyEvents...types) {
+		keyEvents(component).onKey(listener, types).listen();
+	}
+	
+	public static void onKey(Component component, Runnable listener, KeyEvents...types) {
+		onKey(component, e->listener.run(), types);
+	}
+	
 	public static void onWindow(Window window, Consumer<WindowEvent> listener, WindowEvents...types) {
-		window(window).onWindow(listener, types).listen();
+		windowEvents(window).onWindow(listener, types).listen();
 	}
 	
 	public static void onWindow(Window window, Runnable listener, WindowEvents...types) {
@@ -120,35 +122,63 @@ public class EventListeners {
 	}
 	
 	public static void onFocus(Component component, Consumer<FocusEvent> listener, FocusEvents...types) {
-		focus(component).onFocus(listener, types).listen();
+		focusEvents(component).onFocus(listener, types).listen();
 	}
 	
 	public static void onFocus(Component component, Runnable listener, FocusEvents...types) {
 		onFocus(component, e->listener.run(), types);
 	}
 	
-	public static KeyListeners keys(Component...sources) {
+	public static void onComponent(Component component, Consumer<ComponentEvent> listener, ComponentEvents...types) {
+		componentEvents(component).onChange(listener, types).listen();
+	}
+	
+	public static void onComponent(Component component, Runnable listener, ComponentEvents...types) {
+		onComponent(component, e->listener.run(), types);
+	}
+	
+	@SafeVarargs
+	public static void onHierarchy(Component source, Consumer<HierarchyEvent> listener, Predicate<HierarchyEvent>...filters) {
+		Consumer<HierarchyEvent> handler = Utils.guard(listener, filters);
+		hierarchyEvents(source).onChange(handler).listen();
+	}
+	
+	@SafeVarargs
+	public static void onHierarchy(Component source, Runnable listener, Predicate<HierarchyEvent>...filters) {
+		onHierarchy(source, e->listener.run(), filters);
+	}
+
+	
+	public static KeyListeners keyEvents(Component...sources) {
 		return new KeyListeners(sources);
 	}
 	
-	public static MouseListeners mouse(Component...sources) {
+	public static MouseListeners mouseEvents(Component...sources) {
 		return new MouseListeners(sources);
 	}
 	
-	public static WindowListeners window(Window...sources) {
+	public static WindowListeners windowEvents(Window...sources) {
 		return new WindowListeners(sources);
 	}
 	
-	public static FocusListeners focus(Component...sources) {
+	public static FocusListeners focusEvents(Component...sources) {
 		return new FocusListeners(sources);
 	}
 	
-	public static ActionListeners actions(Object...sources) {
+	public static ActionListeners actionEvents(Object...sources) {
 		return new ActionListeners(sources);
 	}
 	
-	public static DocumentListeners document(Object...sources) {
+	public static DocumentListeners documentEvents(Object...sources) {
 		return new DocumentListeners(sources);
+	}
+	
+	public static HierarchyListeners hierarchyEvents(Component...sources) {
+		return new HierarchyListeners(sources);
+	}
+	
+	public static ComponentListeners componentEvents(Component...sources) {
+		return new ComponentListeners(sources);
 	}
 	
 	public static interface ActionSource { void addActionListener(ActionListener listener); }
@@ -166,14 +196,13 @@ public class EventListeners {
 		
 		@SafeVarargs
 		public final ActionListeners onAction(Runnable...handlers) {
-			List<Consumer<ActionEvent>> listeners = Arrays.stream(handlers)
-					.map(h->(Consumer<ActionEvent>)e->h.run()).collect(Collectors.toList());
+			List<Consumer<ActionEvent>> listeners = asList(map(handlers, h->e->h.run()));
 			return (ActionListeners)register(listeners, PERFORMED);
 		}
 
 		@Override
 		protected void bind(ActionSource source, ActionListener adapter) {
-			bind(source::addActionListener, adapter, PERFORMED);		
+			bind(source::addActionListener, adapter, ActionEvents.values());		
 		}
 	}
 	
@@ -189,7 +218,7 @@ public class EventListeners {
 			if(source instanceof Document) {
 				return DuckType.createWrapper(source, DocumentSource.class);
 			}
-			return getDuckType(DocumentSource.class, source);
+			return DuckType.getDuckType(DocumentSource.class, source);
 		}
 		
 		@SafeVarargs
@@ -199,7 +228,7 @@ public class EventListeners {
 
 		@Override
 		protected void bind(DocumentSource source, DocumentListener adapter) {
-			bind(source.getDocument()::addDocumentListener, adapter, INSERTED, REMOVED, CHANGED);	
+			bind(source.getDocument()::addDocumentListener, adapter, DocumentEvents.values());	
 		}
 	}
 	
@@ -235,10 +264,19 @@ public class EventListeners {
 		public KeyListeners onKey(Consumer<KeyEvent> handler, KeyEvents...types) {
 			return (KeyListeners)register(handler, types);
 		}
+		
+		public KeyListeners onKey(Consumer<KeyEvent> handler, Predicate<KeyEvent> filter, KeyEvents...types) {
+			return onKey(Utils.guard(handler, filter), types);
+		}
+		
+		@SafeVarargs
+		public final KeyListeners onKeyPressed(Consumer<KeyEvent> handler, Predicate<KeyEvent>...filters) {
+			return onKey(Utils.guard(handler, filters), KeyEvents.PRESSED);
+		}
 
 		@Override
 		protected void bind(Component source, KeyListener adapter) {
-			bind(source::addKeyListener, adapter, TYPED, KeyEvents.PRESSED, KeyEvents.RELEASED);
+			bind(source::addKeyListener, adapter, KeyEvents.values());
 		}		
 	}
 	
@@ -274,7 +312,44 @@ public class EventListeners {
 
 		@Override
 		protected void bind(Component source, FocusListener adapter) {
-			bind(source::addFocusListener, adapter, FocusEvents.GAINED, FocusEvents.LOST);
+			bind(source::addFocusListener, adapter, FocusEvents.values());
+		}
+	}
+	
+	public static class HierarchyListeners extends EventSubscriptionBuilder<HierarchyEvents, HierarchyListener, Component> {
+		public HierarchyListeners(Component...sources) {
+			super(HierarchyEvents.class, sources);
+		}
+		
+		@SafeVarargs
+		public final HierarchyListeners onChange(Consumer<HierarchyEvent>...handlers) {
+			return (HierarchyListeners)register(Arrays.asList(handlers), HierarchyEvents.CHANGED);
+		}
+		
+		@SafeVarargs
+		public final HierarchyListeners onChange(Runnable...handlers) {
+			List<Consumer<HierarchyEvent>> listeners = asList(map(handlers, h->e->h.run()));
+			return (HierarchyListeners)register(listeners, HierarchyEvents.CHANGED);
+		}
+
+		@Override
+		protected void bind(Component source, HierarchyListener adapter) {
+			bind(source::addHierarchyListener, adapter, HierarchyEvents.values());
+		}
+	}
+
+	public static class ComponentListeners extends EventSubscriptionBuilder<ComponentEvents, ComponentListener, Component> {
+		public ComponentListeners(Component...sources) {
+			super(ComponentEvents.class, sources);
+		}
+		
+		public ComponentListeners onChange(Consumer<ComponentEvent> handler, ComponentEvents...types) {
+			return (ComponentListeners)register(handler, types);
+		}
+
+		@Override
+		protected void bind(Component source, ComponentListener adapter) {
+			bind(source::addComponentListener, adapter, ComponentEvents.values());
 		}
 	}
 
@@ -407,99 +482,8 @@ public class EventListeners {
 	}
 	
 	public static <I> List<I> getDuckTypes(Class<I> interfaceType, Object...targets) {
-		return asList(map(targets, t->getDuckType(interfaceType, t)));
+		return asList(map(targets, t->DuckType.getDuckType(interfaceType, t)));
 	}
-	
-	@SuppressWarnings("unchecked")
-	public static <I> I getDuckType(Class<I> interfaceType, Object target) {
-		if(target!=null && interfaceType.isAssignableFrom(target.getClass())) {
-			return (I)target;
-		}
-		
-		final boolean valid = DuckType.isDuckType(target, interfaceType);
-		return (I)Proxy.newProxyInstance(DuckType.class.getClassLoader(), new Class[] {interfaceType}, new InvocationHandler() {
-			@Override
-			public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-				if(valid) {
-					Method tMethod = DuckType.findMethod(target, method.getName(), method.getParameterTypes());
-					return tMethod.invoke(target, args);
-				}
-				return null;
-			}
-		});	
-	}
-	
-	public static class DuckType<I> {
-		
-		private static boolean isDuckType(Object target, Class<?> interfaceType) {
-			if(target==null || !interfaceType.isInterface()) {
-				return false;
-			}
-			
-			for(Method m: getInterfaceMethods(interfaceType)) {
-				if(findMethod(target, m.getName(), m.getParameterTypes())==null) {
-					return false;
-				}
-			}
-			return true;
-		}
-		
-		private static List<Method> getInterfaceMethods(Class<?> iface) {
-			List<Method> methods = new ArrayList<Method>();
-			if(!iface.isInterface()) {
-				return methods;
-			}
-			
-			methods.addAll(Arrays.asList(iface.getMethods()));
-			for(Class<?> parent: iface.getInterfaces()) {
-				methods.addAll(getInterfaceMethods(parent));
-			}
-			return methods;
-		}
-		
-		private static Method findMethod(Object target, String name, Class<?>... params) {
-			return target==null? null: findMethod(target.getClass(), name, params);
-		}
 
-		private static Method findMethod(Class<?> clazz, String name, Class<?>... params) {
-			if(clazz==null || Utils.isBlank(name)) {
-				return null;
-			}
-			
-			name = name.trim();
-			Method method = getMethod(clazz, name, params);
-			while(method==null && clazz!=null) {
-				clazz = clazz.getSuperclass();
-				method = getMethod(clazz, name, params);
-			}
-			return method;
-		}
-		
-		private static Method getMethod(Class<?> clazz, String name, Class<?>... params) {
-			try {
-				return clazz.getMethod(name, params);
-			} catch (Exception e) {
-				return null;
-			}
-		}
-
-		@SuppressWarnings("unchecked")
-		private static <T, I> I createWrapper(T item, Class<I> wrapperInterface) {
-			if(wrapperInterface==null || !wrapperInterface.isInterface()) {
-				throw new IllegalArgumentException("'wrapperInterface' parameters must be an interface class.");
-			}
-			
-			ClassLoader cl = EventListeners.class.getClassLoader();
-			@SuppressWarnings("rawtypes")
-			Class[] interfaces = new Class[] {wrapperInterface};
-			InvocationHandler handler = new InvocationHandler() {
-				@Override
-				public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-					return item;
-				}
-			};		
-			return (I)Proxy.newProxyInstance(cl, interfaces, handler);		
-		}
-	}
 
 }
