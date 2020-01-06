@@ -142,7 +142,7 @@ public class CredentialsPanel extends JPanel {
 		
 		setFocusable(true);
 		keyEvents(this, pwdField, cancel, accept, titlebar)
-			.onKeyPressed(this::onEscapeKey, e->e.getKeyCode()==KeyEvent.VK_ESCAPE).listen();
+			.onKeyPressed(this::cancel, e->e.getKeyCode()==KeyEvent.VK_ESCAPE).listen();
 		
 		onHierarchy(this, this::onShowingChanged, e->isFlag(e, HierarchyEvent.SHOWING_CHANGED));
 	}
@@ -172,10 +172,6 @@ public class CredentialsPanel extends JPanel {
 	public synchronized UsernamePasswordCredentials waitForCredentials() {
 		waitFor();
 		return clearCredentials();
-	}
-	
-	private void onEscapeKey(KeyEvent event) {
-		cancel();
 	}
 	
 	private void cancel() {

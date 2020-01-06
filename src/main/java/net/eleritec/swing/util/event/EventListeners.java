@@ -273,6 +273,19 @@ public class EventListeners {
 		public final KeyListeners onKeyPressed(Consumer<KeyEvent> handler, Predicate<KeyEvent>...filters) {
 			return onKey(Utils.guard(handler, filters), KeyEvents.PRESSED);
 		}
+		
+		public KeyListeners onKey(Runnable handler, KeyEvents...types) {
+			return onKey((evt)->handler.run(), types);
+		}
+		
+		public KeyListeners onKey(Runnable handler, Predicate<KeyEvent> filter, KeyEvents...types) {
+			return onKey((evt)->handler.run(), filter, types);
+		}
+		
+		@SafeVarargs
+		public final KeyListeners onKeyPressed(Runnable handler, Predicate<KeyEvent>...filters) {
+			return onKeyPressed((evt)->handler.run(), filters);
+		}
 
 		@Override
 		protected void bind(Component source, KeyListener adapter) {
