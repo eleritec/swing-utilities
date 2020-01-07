@@ -1,24 +1,24 @@
 package net.eleritec.swing.dialog;
 
-import static net.eleritec.swing.util.SwingUtils.centerOnScreen;
-import static net.eleritec.swing.util.SwingUtils.invokeAndWait;
-import static net.eleritec.swing.util.SwingUtils.isFlag;
-import static net.eleritec.swing.util.SwingUtils.setMaxPreferredWidth;
-import static net.eleritec.swing.util.SwingUtils.setSystemLookAndFeel;
-import static net.eleritec.swing.util.SwingUtils.subtract;
-import static net.eleritec.swing.util.Utils.isBlank;
-import static net.eleritec.swing.util.Utils.newInstance;
-import static net.eleritec.swing.util.event.EventListeners.actionEvents;
-import static net.eleritec.swing.util.event.EventListeners.keyEvents;
-import static net.eleritec.swing.util.event.EventListeners.onAction;
-import static net.eleritec.swing.util.event.EventListeners.onDocument;
-import static net.eleritec.swing.util.event.EventListeners.onHierarchy;
-import static net.eleritec.swing.util.event.EventListeners.onMouse;
-import static net.eleritec.swing.util.event.EventTypes.DocumentEvents.CHANGED;
-import static net.eleritec.swing.util.event.EventTypes.DocumentEvents.INSERTED;
-import static net.eleritec.swing.util.event.EventTypes.DocumentEvents.REMOVED;
-import static net.eleritec.swing.util.event.EventTypes.MouseEvents.DRAGGED;
-import static net.eleritec.swing.util.event.EventTypes.MouseEvents.PRESSED;
+import static net.eleritec.utils.StringUtil.isEmpty;
+import static net.eleritec.utils.object.ClassUtil.newInstance;
+import static net.eleritec.utils.swing.EventListeners.actionEvents;
+import static net.eleritec.utils.swing.EventListeners.keyEvents;
+import static net.eleritec.utils.swing.EventListeners.onAction;
+import static net.eleritec.utils.swing.EventListeners.onDocument;
+import static net.eleritec.utils.swing.EventListeners.onHierarchy;
+import static net.eleritec.utils.swing.EventListeners.onMouse;
+import static net.eleritec.utils.swing.EventTypes.DocumentEvents.CHANGED;
+import static net.eleritec.utils.swing.EventTypes.DocumentEvents.INSERTED;
+import static net.eleritec.utils.swing.EventTypes.DocumentEvents.REMOVED;
+import static net.eleritec.utils.swing.EventTypes.MouseEvents.DRAGGED;
+import static net.eleritec.utils.swing.EventTypes.MouseEvents.PRESSED;
+import static net.eleritec.utils.swing.SwingUtils.centerOnScreen;
+import static net.eleritec.utils.swing.SwingUtils.invokeAndWait;
+import static net.eleritec.utils.swing.SwingUtils.isFlag;
+import static net.eleritec.utils.swing.SwingUtils.setMaxPreferredWidth;
+import static net.eleritec.utils.swing.SwingUtils.setSystemLookAndFeel;
+import static net.eleritec.utils.swing.SwingUtils.subtract;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -45,8 +45,8 @@ import javax.swing.border.LineBorder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
-import net.eleritec.swing.util.Utils;
-import net.eleritec.swing.util.WindowWrapper;
+import net.eleritec.utils.ThreadUtil;
+import net.eleritec.utils.swing.WindowWrapper;
 
 public class CredentialsPanel extends JPanel {
 
@@ -155,7 +155,7 @@ public class CredentialsPanel extends JPanel {
 			pwdField.setText("");
 		}
 		else {
-			Utils.notifyAll(lock);
+			ThreadUtil.notifyAll(lock);
 		}
 	}
 	
@@ -203,12 +203,12 @@ public class CredentialsPanel extends JPanel {
 	}
 	
 	private boolean areCredentialsPresent() {
-		return pwdField.getPassword().length > 0 && !isBlank(model.getSelectedUsername());
+		return pwdField.getPassword().length > 0 && !isEmpty(model.getSelectedUsername());
 	}
 	
 	public void waitFor() {
 		if(getAncestorWindow().isVisible()) {
-			Utils.waitFor(lock);
+			ThreadUtil.waitFor(lock);
 		}
 	}
 	

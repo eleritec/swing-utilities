@@ -1,7 +1,7 @@
 package net.eleritec.swing.dialog;
 
-import static net.eleritec.swing.util.Utils.isBlank;
-import static net.eleritec.swing.util.Utils.trimOrEmpty;
+import static net.eleritec.utils.StringUtil.isEmpty;
+import static net.eleritec.utils.StringUtil.trimOrEmpty;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -66,7 +66,7 @@ public class AskCredentialsModel {
 
 	public AskCredentialsModel setSelectedUsername(String selectedUsername) {
 		selectedUsername = trimOrEmpty(selectedUsername);
-		if(!isBlank(selectedUsername)) {
+		if(!isEmpty(selectedUsername)) {
 			this.selectedUsername = selectedUsername.trim();
 			if(!this.allowedUsernames.contains(this.selectedUsername)) {
 				updateAllowedUsernames();
@@ -98,7 +98,7 @@ public class AskCredentialsModel {
 	
 	public final AskCredentialsModel addUsernames(Collection<String> usernames) {
 		for(String username: usernames) {
-			if(!isBlank(username)) {
+			if(!isEmpty(username)) {
 				availableUsernames.add(username.trim());
 			}	
 		}		
@@ -108,7 +108,7 @@ public class AskCredentialsModel {
 	
 	private void updateAllowedUsernames() {
 		Set<String> allowed = new TreeSet<String>(availableUsernames);
-		if(!isBlank(selectedUsername)) {
+		if(!isEmpty(selectedUsername)) {
 			allowed.add(selectedUsername);
 		}
 		allowedUsernames = Collections.unmodifiableList(new ArrayList<String>(allowed)); 
